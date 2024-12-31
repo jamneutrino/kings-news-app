@@ -24,6 +24,39 @@ export default function RedditColumn() {
     fetchPosts();
   }, []);
 
+  const renderMedia = (post: RedditPost) => {
+    if (post.isVideo && post.videoUrl) {
+      return (
+        <div className="mt-2 rounded-lg overflow-hidden">
+          <video 
+            controls
+            preload="none"
+            poster={post.thumbnail}
+            className="w-full max-h-[400px] object-contain bg-black"
+          >
+            <source src={post.videoUrl} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      );
+    }
+    
+    if (post.imageUrl) {
+      return (
+        <div className="mt-2 rounded-lg overflow-hidden">
+          <img
+            src={post.imageUrl}
+            alt={post.title}
+            className="w-full max-h-[400px] object-contain bg-gray-100"
+            loading="lazy"
+          />
+        </div>
+      );
+    }
+
+    return null;
+  };
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -60,6 +93,12 @@ export default function RedditColumn() {
             >
               <h3 className="font-medium">{post.title}</h3>
             </a>
+            {renderMedia(post)}
+            {post.selftext && (
+              <p className="mt-2 text-sm text-gray-600 line-clamp-3">
+                {post.selftext}
+              </p>
+            )}
             <div className="mt-2 text-sm text-gray-600">
               <span>Posted by u/{post.author}</span>
               <span className="mx-2">•</span>

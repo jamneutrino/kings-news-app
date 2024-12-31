@@ -31,6 +31,26 @@ export interface NewsArticle {
   imageUrl?: string;
 }
 
+function extractImageFromDescription(description: string): { imageUrl?: string; cleanDescription: string } {
+  // Try to find an image in the description
+  const imgMatch = description.match(/<img[^>]+src="([^">]+)"/);
+  let imageUrl = imgMatch ? imgMatch[1] : undefined;
+  
+  // Clean up the description by removing HTML tags and extra whitespace
+  let cleanDescription = description
+    .replace(/<img[^>]+>/g, '') // Remove img tags
+    .replace(/<[^>]+>/g, '') // Remove other HTML tags
+    .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+    .trim();
+
+  // If the image URL is relative, skip it
+  if (imageUrl?.startsWith('/')) {
+    imageUrl = undefined;
+  }
+
+  return { imageUrl, cleanDescription };
+}
+
 export async function getKingsNews(): Promise<NewsArticle[]> {
   try {
     // Use a CORS proxy to avoid CORS issues
@@ -49,14 +69,17 @@ export async function getKingsNews(): Promise<NewsArticle[]> {
       const title = typeof item.title[0] === 'string' ? item.title[0] : item.title[0]._;
       const description = typeof item.description[0] === 'string' ? item.description[0] : item.description[0]._;
       
+      // Extract image and clean description
+      const { imageUrl, cleanDescription } = extractImageFromDescription(description);
+      
       return {
         id: item.guid[0],
         headline: title,
-        excerpt: description,
+        excerpt: cleanDescription,
         publisher: item.source?.[0] || 'SportSpyder',
         publishedDate: item.pubDate[0],
         url: item.link[0],
-        imageUrl: undefined
+        imageUrl
       };
     });
   } catch (error) {

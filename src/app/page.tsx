@@ -231,21 +231,17 @@ export default function Home() {
       <div 
         key={column.type}
         className={`
-          flex-1 min-w-[300px] max-w-[600px] overflow-y-auto border-r
-          transition-all duration-500 ease-in-out transform
-          ${isActive ? 'translate-x-0 scale-100' : 
-            isPrevious ? '-translate-x-full scale-95' : 
-            isNext ? 'translate-x-full scale-95' : 'translate-x-full'}
-          md:translate-x-0 md:scale-100 md:static md:opacity-100 md:pointer-events-auto
-          ${!isActive && 'md:relative md:opacity-100 md:pointer-events-auto'}
+          flex-1 min-w-[300px] max-w-[600px] h-full border-r
+          transition-all duration-300 ease-in-out
+          md:relative md:translate-x-0 md:opacity-100 md:pointer-events-auto md:block
+          ${isActive ? 'relative translate-x-0 opacity-100 pointer-events-auto' : 'absolute inset-0'}
+          ${!isActive && 'opacity-0 pointer-events-none'}
+          ${isPrevious && '-translate-x-full'}
+          ${isNext && 'translate-x-full'}
           ${!isActive && !isPrevious && !isNext && 'hidden md:block'}
-          will-change-transform
         `}
-        style={{
-          touchAction: 'pan-y pinch-zoom',
-        }}
       >
-        <div className="h-full pt-14 md:pt-4 p-4">
+        <div className="h-full overflow-y-auto pt-14 md:pt-4 px-4">
           {columnContent}
         </div>
       </div>
@@ -259,7 +255,7 @@ export default function Home() {
   }, {} as Record<ColumnType, boolean>);
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-gray-100 touch-pan-y">
+    <div className="flex h-screen w-screen overflow-hidden bg-gray-100">
       <Sidebar 
         visibleColumns={visibleColumns}
         onToggle={toggleColumn}
@@ -274,7 +270,7 @@ export default function Home() {
       >
         {renderMobileHeader()}
         {renderColumnManager()}
-        <div className="flex-1 flex overflow-x-hidden md:overflow-x-auto">
+        <div className="flex-1 flex relative overflow-hidden">
           {columns.map((column, index) => renderColumn(column, index))}
         </div>
         

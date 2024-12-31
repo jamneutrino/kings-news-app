@@ -75,8 +75,18 @@ export default function NewsColumn() {
               className="block hover:text-purple-700"
             >
               <h3 className="font-medium">{article.headline}</h3>
+              {article.imageUrl && (
+                <div className="mt-2 rounded-lg overflow-hidden">
+                  <img
+                    src={article.imageUrl}
+                    alt={article.headline}
+                    className="w-full max-h-[300px] object-cover bg-gray-100"
+                    loading="lazy"
+                  />
+                </div>
+              )}
             </a>
-            <p className="mt-2 text-sm text-gray-600">{article.excerpt}</p>
+            <p className="mt-2 text-sm text-gray-600 line-clamp-3">{article.excerpt}</p>
             <div className="mt-2 text-sm text-gray-500">
               <span>{article.publisher}</span>
               <span className="mx-2">•</span>
