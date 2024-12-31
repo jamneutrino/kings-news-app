@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Menu, X, Settings } from 'lucide-react';
 
-type ColumnType = 'reddit' | 'youtube' | 'news' | 'podcast';
+type ColumnType = 'reddit' | 'youtube' | 'news' | 'podcast' | 'twitter';
 
 interface SidebarProps {
   visibleColumns: Record<ColumnType, boolean>;
@@ -70,6 +70,16 @@ export default function Sidebar({ visibleColumns, onToggle, onManageColumns }: S
                 className="w-4 h-4 text-purple-600"
               />
               <label htmlFor="podcast" className="text-gray-700">Podcasts</label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="twitter"
+                checked={visibleColumns.twitter}
+                onChange={() => onToggle('twitter')}
+                className="w-4 h-4 text-purple-600"
+              />
+              <label htmlFor="twitter" className="text-gray-700">Twitter</label>
             </div>
           </div>
           

@@ -6,9 +6,10 @@ import RedditColumn from '@/components/RedditColumn';
 import YouTubeColumn from '@/components/YouTubeColumn';
 import NewsColumn from '@/components/NewsColumn';
 import PodcastColumn from '@/components/PodcastColumn';
+import TwitterColumn from '@/components/TwitterColumn';
 import { GripVertical } from 'lucide-react';
 
-type ColumnType = 'reddit' | 'youtube' | 'news' | 'podcast';
+type ColumnType = 'reddit' | 'youtube' | 'news' | 'podcast' | 'twitter';
 
 interface ColumnConfig {
   type: ColumnType;
@@ -20,7 +21,8 @@ const defaultColumns: ColumnConfig[] = [
   { type: 'reddit', visible: true, title: 'Reddit' },
   { type: 'youtube', visible: true, title: 'YouTube' },
   { type: 'news', visible: true, title: 'News' },
-  { type: 'podcast', visible: true, title: 'Podcasts' }
+  { type: 'podcast', visible: true, title: 'Podcasts' },
+  { type: 'twitter', visible: true, title: 'Twitter' }
 ];
 
 export default function Home() {
@@ -30,6 +32,8 @@ export default function Home() {
   const [isManagingColumns, setIsManagingColumns] = useState(false);
   const touchStartX = useRef<number | null>(null);
   const mainRef = useRef<HTMLElement>(null);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   // Load column configuration from localStorage after mount
   useEffect(() => {
@@ -37,9 +41,22 @@ export default function Home() {
     if (saved) {
       try {
         const savedConfig = JSON.parse(saved);
-        setColumns(savedConfig);
+        // Check if saved config has all the current column types
+        const hasAllColumns = defaultColumns.every(defaultCol => 
+          savedConfig.some((savedCol: ColumnConfig) => savedCol.type === defaultCol.type)
+        );
+        
+        if (hasAllColumns) {
+          setColumns(savedConfig);
+        } else {
+          // If missing any columns, use default config and update storage
+          console.log('Updating column configuration to include new columns');
+          localStorage.setItem('columnConfig', JSON.stringify(defaultColumns));
+          setColumns(defaultColumns);
+        }
       } catch (e) {
         console.error('Failed to parse saved column config:', e);
+        localStorage.setItem('columnConfig', JSON.stringify(defaultColumns));
       }
     }
     setIsLoaded(true);
@@ -160,33 +177,45 @@ export default function Home() {
             {columns.map((column, index) => (
               <div 
                 key={column.type}
-                className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg"
+                className={`
+                  flex items-center space-x-3 p-3 rounded-lg select-none
+                  transition-all duration-200 ease-in-out
+                  ${draggedIndex === index ? 'opacity-50 bg-purple-50 scale-105 shadow-lg' : 'bg-gray-50'}
+                  ${dragOverIndex === index ? 'border-t-2 border-purple-500' : ''}
+                `}
                 draggable
                 onDragStart={(e) => {
-                  e.dataTransfer.setData('text/plain', index.toString());
-                  e.currentTarget.classList.add('opacity-50');
+                  setDraggedIndex(index);
+                  e.dataTransfer.effectAllowed = 'move';
                 }}
-                onDragEnd={(e) => {
-                  e.currentTarget.classList.remove('opacity-50');
+                onDragEnd={() => {
+                  setDraggedIndex(null);
+                  setDragOverIndex(null);
                 }}
                 onDragOver={(e) => {
                   e.preventDefault();
-                  e.currentTarget.classList.add('bg-purple-50');
+                  if (draggedIndex === null || draggedIndex === index) return;
+                  setDragOverIndex(index);
                 }}
-                onDragLeave={(e) => {
-                  e.currentTarget.classList.remove('bg-purple-50');
+                onDragLeave={() => {
+                  setDragOverIndex(null);
                 }}
                 onDrop={(e) => {
                   e.preventDefault();
-                  e.currentTarget.classList.remove('bg-purple-50');
-                  const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
-                  const toIndex = index;
-                  if (fromIndex !== toIndex) {
-                    moveColumn(fromIndex, toIndex);
-                  }
+                  if (draggedIndex === null || draggedIndex === index) return;
+                  moveColumn(draggedIndex, index);
+                  setDraggedIndex(null);
+                  setDragOverIndex(null);
+                }}
+                style={{
+                  transform: dragOverIndex === index 
+                    ? `translateY(${draggedIndex !== null && draggedIndex < index ? '-2px' : '2px'})`
+                    : 'translateY(0)',
                 }}
               >
-                <GripVertical className="text-gray-400 flex-shrink-0" size={20} />
+                <div className="cursor-move touch-none">
+                  <GripVertical className="text-gray-400 flex-shrink-0" size={20} />
+                </div>
                 <div className="flex-1">
                   <div className="font-medium text-gray-900">{column.title}</div>
                 </div>
@@ -218,6 +247,7 @@ export default function Home() {
         case 'youtube': return <YouTubeColumn />;
         case 'news': return <NewsColumn />;
         case 'podcast': return <PodcastColumn />;
+        case 'twitter': return <TwitterColumn />;
       }
     })();
 
