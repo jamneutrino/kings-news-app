@@ -236,37 +236,13 @@ export default function Home() {
           ${isActive ? 'translate-x-0 scale-100' : 
             isPrevious ? '-translate-x-full scale-95' : 
             isNext ? 'translate-x-full scale-95' : 'translate-x-full'}
-          md:translate-x-0 md:scale-100 md:relative md:opacity-100
-          ${!isActive && 'absolute inset-0 opacity-0 pointer-events-none'}
-          ${isActive && 'relative opacity-100 pointer-events-auto'}
+          md:translate-x-0 md:scale-100 md:static md:opacity-100 md:pointer-events-auto
+          ${!isActive && 'md:relative md:opacity-100 md:pointer-events-auto'}
+          ${!isActive && !isPrevious && !isNext && 'hidden md:block'}
           will-change-transform
         `}
-        draggable="true"
         style={{
           touchAction: 'pan-y pinch-zoom',
-        }}
-        onDragStart={(e) => {
-          e.dataTransfer.setData('text/plain', index.toString());
-          e.currentTarget.classList.add('opacity-50');
-        }}
-        onDragEnd={(e) => {
-          e.currentTarget.classList.remove('opacity-50');
-        }}
-        onDragOver={(e) => {
-          e.preventDefault();
-          e.currentTarget.classList.add('bg-purple-50');
-        }}
-        onDragLeave={(e) => {
-          e.currentTarget.classList.remove('bg-purple-50');
-        }}
-        onDrop={(e) => {
-          e.preventDefault();
-          e.currentTarget.classList.remove('bg-purple-50');
-          const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
-          const toIndex = index;
-          if (fromIndex !== toIndex) {
-            moveColumn(fromIndex, toIndex);
-          }
         }}
       >
         <div className="h-full pt-14 md:pt-4 p-4">
@@ -298,10 +274,12 @@ export default function Home() {
       >
         {renderMobileHeader()}
         {renderColumnManager()}
-        {columns.map((column, index) => renderColumn(column, index))}
+        <div className="flex-1 flex overflow-x-hidden md:overflow-x-auto">
+          {columns.map((column, index) => renderColumn(column, index))}
+        </div>
         
         {/* Mobile Column Indicator */}
-        <div className="fixed bottom-4 left-0 right-0 flex justify-center gap-2 md:hidden">
+        <div className="fixed bottom-4 left-0 right-0 flex justify-center gap-2 md:hidden pointer-events-none">
           {columns.filter(col => col.visible).map((_, index) => (
             <div
               key={index}
