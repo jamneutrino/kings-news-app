@@ -19,7 +19,7 @@ const defaultColumns: ColumnConfig[] = [
   { type: 'reddit', visible: true, title: 'Reddit' },
   { type: 'youtube', visible: true, title: 'YouTube' },
   { type: 'news', visible: true, title: 'News' },
-  { type: 'podcast', visible: true, title: 'Podcasts' }
+  { type: 'podcast', visible: true, title: 'Podcast' }
 ];
 
 export default function Home() {
