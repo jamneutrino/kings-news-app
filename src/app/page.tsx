@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Sidebar from '@/components/Sidebar';
 import RedditColumn from '@/components/RedditColumn';
 import YouTubeColumn from '@/components/YouTubeColumn';
@@ -19,12 +19,15 @@ const defaultColumns: ColumnConfig[] = [
   { type: 'reddit', visible: true, title: 'Reddit' },
   { type: 'youtube', visible: true, title: 'YouTube' },
   { type: 'news', visible: true, title: 'News' },
-  { type: 'podcast', visible: true, title: 'Podcast' }
+  { type: 'podcast', visible: true, title: 'Podcasts' }
 ];
 
 export default function Home() {
   const [columns, setColumns] = useState<ColumnConfig[]>(defaultColumns);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [activeColumnIndex, setActiveColumnIndex] = useState(0);
+  const touchStartX = useRef<number | null>(null);
+  const mainRef = useRef<HTMLElement>(null);
 
   // Load column configuration from localStorage after mount
   useEffect(() => {
@@ -62,6 +65,33 @@ export default function Home() {
     });
   };
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+
+    const touchEndX = e.touches[0].clientX;
+    const deltaX = touchEndX - touchStartX.current;
+    const visibleColumns = columns.filter(col => col.visible);
+
+    if (Math.abs(deltaX) > 50) { // Minimum swipe distance
+      if (deltaX > 0 && activeColumnIndex > 0) {
+        // Swipe right
+        setActiveColumnIndex(prev => prev - 1);
+      } else if (deltaX < 0 && activeColumnIndex < visibleColumns.length - 1) {
+        // Swipe left
+        setActiveColumnIndex(prev => prev + 1);
+      }
+      touchStartX.current = null;
+    }
+  };
+
+  const handleTouchEnd = () => {
+    touchStartX.current = null;
+  };
+
   const renderColumn = (column: ColumnConfig, index: number) => {
     if (!column.visible) return null;
 
@@ -74,11 +104,25 @@ export default function Home() {
       }
     })();
 
+    const visibleColumns = columns.filter(col => col.visible);
+    const visibleIndex = visibleColumns.findIndex(col => col.type === column.type);
+    const isActive = visibleIndex === activeColumnIndex;
+
     return (
       <div 
         key={column.type}
-        className="flex-1 min-w-[300px] max-w-[600px] p-4 overflow-y-auto border-r cursor-move"
-        draggable
+        className={`
+          flex-1 min-w-[300px] max-w-[600px] p-4 overflow-y-auto border-r
+          transition-transform duration-300 ease-in-out
+          ${isActive ? 'translate-x-0' : 'translate-x-full'} 
+          md:translate-x-0 md:relative md:opacity-100
+          ${!isActive && 'absolute inset-0 opacity-0 pointer-events-none'}
+          ${isActive && 'relative opacity-100 pointer-events-auto'}
+        `}
+        draggable="true"
+        style={{
+          touchAction: 'pan-y pinch-zoom',
+        }}
         onDragStart={(e) => {
           e.dataTransfer.setData('text/plain', index.toString());
           e.currentTarget.classList.add('opacity-50');
@@ -103,7 +147,9 @@ export default function Home() {
           }
         }}
       >
-        {columnContent}
+        <div className="h-full">
+          {columnContent}
+        </div>
       </div>
     );
   };
@@ -115,13 +161,31 @@ export default function Home() {
   }, {} as Record<ColumnType, boolean>);
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen w-screen overflow-hidden bg-gray-100 touch-pan-y">
       <Sidebar 
         visibleColumns={visibleColumns}
         onToggle={toggleColumn}
       />
-      <main className="flex-1 flex overflow-hidden">
+      <main 
+        ref={mainRef}
+        className="flex-1 flex overflow-hidden relative w-full"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         {columns.map((column, index) => renderColumn(column, index))}
+        
+        {/* Mobile Column Indicator */}
+        <div className="fixed bottom-4 left-0 right-0 flex justify-center gap-2 md:hidden">
+          {columns.filter(col => col.visible).map((_, index) => (
+            <div
+              key={index}
+              className={`w-2 h-2 rounded-full ${
+                index === activeColumnIndex ? 'bg-purple-600' : 'bg-gray-300'
+              }`}
+            />
+          ))}
+        </div>
       </main>
     </div>
   );
