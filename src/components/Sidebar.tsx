@@ -1,14 +1,15 @@
 import { useState } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Settings } from 'lucide-react';
 
 type ColumnType = 'reddit' | 'youtube' | 'news' | 'podcast';
 
 interface SidebarProps {
   visibleColumns: Record<ColumnType, boolean>;
   onToggle: (columnType: ColumnType) => void;
+  onManageColumns: () => void;
 }
 
-export default function Sidebar({ visibleColumns, onToggle }: SidebarProps) {
+export default function Sidebar({ visibleColumns, onToggle, onManageColumns }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -71,9 +72,20 @@ export default function Sidebar({ visibleColumns, onToggle }: SidebarProps) {
               <label htmlFor="podcast" className="text-gray-700">Podcasts</label>
             </div>
           </div>
-          <div className="mt-8 text-sm text-gray-500 hidden md:block">
-            Drag columns to reorder them
+          
+          <div className="mt-8 border-t pt-4">
+            <button
+              onClick={() => {
+                onManageColumns();
+                setIsOpen(false);
+              }}
+              className="flex items-center space-x-2 text-gray-700 hover:text-purple-600 transition-colors duration-200"
+            >
+              <Settings size={20} />
+              <span>Manage Columns</span>
+            </button>
           </div>
+
           <div className="mt-8 text-sm text-gray-500 md:hidden">
             Swipe left/right to view columns
           </div>

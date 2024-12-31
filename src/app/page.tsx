@@ -6,6 +6,7 @@ import RedditColumn from '@/components/RedditColumn';
 import YouTubeColumn from '@/components/YouTubeColumn';
 import NewsColumn from '@/components/NewsColumn';
 import PodcastColumn from '@/components/PodcastColumn';
+import { GripVertical } from 'lucide-react';
 
 type ColumnType = 'reddit' | 'youtube' | 'news' | 'podcast';
 
@@ -26,6 +27,7 @@ export default function Home() {
   const [columns, setColumns] = useState<ColumnConfig[]>(defaultColumns);
   const [isLoaded, setIsLoaded] = useState(false);
   const [activeColumnIndex, setActiveColumnIndex] = useState(0);
+  const [isManagingColumns, setIsManagingColumns] = useState(false);
   const touchStartX = useRef<number | null>(null);
   const mainRef = useRef<HTMLElement>(null);
 
@@ -100,33 +102,109 @@ export default function Home() {
 
     return (
       <div className="fixed top-0 left-0 right-0 h-14 bg-white shadow-sm z-20 flex items-center justify-between px-4 md:hidden">
-        {prevColumn ? (
-          <button 
-            onClick={() => setActiveColumnIndex(prev => prev - 1)}
-            className="text-sm text-gray-500 flex items-center hover:text-purple-600 transition-colors duration-200 active:scale-95"
-          >
-            <span className="mr-1 text-lg">←</span>
-            {prevColumn.title}
-          </button>
-        ) : (
-          <div className="w-20" />
-        )}
-        
-        <div className="font-semibold text-purple-700 text-lg">
-          {currentColumn.title}
+        <div className="flex-1 flex items-center">
+          {prevColumn ? (
+            <button 
+              onClick={() => setActiveColumnIndex(prev => prev - 1)}
+              className="text-sm text-gray-500 flex items-center hover:text-purple-600 transition-colors duration-200 active:scale-95"
+            >
+              <span className="mr-1 text-lg">←</span>
+              {prevColumn.title}
+            </button>
+          ) : (
+            <div className="w-20" />
+          )}
         </div>
         
-        {nextColumn ? (
-          <button 
-            onClick={() => setActiveColumnIndex(prev => prev + 1)}
-            className="text-sm text-gray-500 flex items-center hover:text-purple-600 transition-colors duration-200 active:scale-95"
-          >
-            {nextColumn.title}
-            <span className="ml-1 text-lg">→</span>
-          </button>
-        ) : (
-          <div className="w-20" />
-        )}
+        <div className="flex-1 flex justify-center">
+          <div className="font-semibold text-purple-700 text-lg">
+            {currentColumn.title}
+          </div>
+        </div>
+        
+        <div className="flex-1 flex items-center justify-end">
+          {nextColumn ? (
+            <button 
+              onClick={() => setActiveColumnIndex(prev => prev + 1)}
+              className="text-sm text-gray-500 flex items-center hover:text-purple-600 transition-colors duration-200 active:scale-95"
+            >
+              {nextColumn.title}
+              <span className="ml-1 text-lg">→</span>
+            </button>
+          ) : (
+            <div className="w-20" />
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const renderColumnManager = () => {
+    if (!isManagingColumns) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg w-full max-w-sm shadow-xl">
+          <div className="p-4 border-b">
+            <div className="flex justify-between items-center">
+              <h2 className="text-lg font-semibold text-gray-900">Manage Columns</h2>
+              <button 
+                onClick={() => setIsManagingColumns(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+          <div className="p-4 space-y-2">
+            {columns.map((column, index) => (
+              <div 
+                key={column.type}
+                className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg"
+                draggable
+                onDragStart={(e) => {
+                  e.dataTransfer.setData('text/plain', index.toString());
+                  e.currentTarget.classList.add('opacity-50');
+                }}
+                onDragEnd={(e) => {
+                  e.currentTarget.classList.remove('opacity-50');
+                }}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.currentTarget.classList.add('bg-purple-50');
+                }}
+                onDragLeave={(e) => {
+                  e.currentTarget.classList.remove('bg-purple-50');
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  e.currentTarget.classList.remove('bg-purple-50');
+                  const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
+                  const toIndex = index;
+                  if (fromIndex !== toIndex) {
+                    moveColumn(fromIndex, toIndex);
+                  }
+                }}
+              >
+                <GripVertical className="text-gray-400 flex-shrink-0" size={20} />
+                <div className="flex-1">
+                  <div className="font-medium text-gray-900">{column.title}</div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={column.visible}
+                  onChange={() => toggleColumn(column.type)}
+                  className="w-4 h-4 text-purple-600 rounded"
+                />
+              </div>
+            ))}
+          </div>
+          <div className="p-4 border-t bg-gray-50">
+            <div className="text-sm text-gray-500">
+              Drag and drop to reorder columns
+            </div>
+          </div>
+        </div>
       </div>
     );
   };
@@ -209,6 +287,7 @@ export default function Home() {
       <Sidebar 
         visibleColumns={visibleColumns}
         onToggle={toggleColumn}
+        onManageColumns={() => setIsManagingColumns(true)}
       />
       <main 
         ref={mainRef}
@@ -218,6 +297,7 @@ export default function Home() {
         onTouchEnd={handleTouchEnd}
       >
         {renderMobileHeader()}
+        {renderColumnManager()}
         {columns.map((column, index) => renderColumn(column, index))}
         
         {/* Mobile Column Indicator */}
