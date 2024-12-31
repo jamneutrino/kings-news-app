@@ -92,6 +92,45 @@ export default function Home() {
     touchStartX.current = null;
   };
 
+  const renderMobileHeader = () => {
+    const visibleColumns = columns.filter(col => col.visible);
+    const currentColumn = visibleColumns[activeColumnIndex];
+    const prevColumn = activeColumnIndex > 0 ? visibleColumns[activeColumnIndex - 1] : null;
+    const nextColumn = activeColumnIndex < visibleColumns.length - 1 ? visibleColumns[activeColumnIndex + 1] : null;
+
+    return (
+      <div className="fixed top-0 left-0 right-0 h-14 bg-white shadow-sm z-20 flex items-center justify-between px-4 md:hidden">
+        {prevColumn ? (
+          <button 
+            onClick={() => setActiveColumnIndex(prev => prev - 1)}
+            className="text-sm text-gray-500 flex items-center hover:text-purple-600 transition-colors duration-200 active:scale-95"
+          >
+            <span className="mr-1 text-lg">←</span>
+            {prevColumn.title}
+          </button>
+        ) : (
+          <div className="w-20" />
+        )}
+        
+        <div className="font-semibold text-purple-700 text-lg">
+          {currentColumn.title}
+        </div>
+        
+        {nextColumn ? (
+          <button 
+            onClick={() => setActiveColumnIndex(prev => prev + 1)}
+            className="text-sm text-gray-500 flex items-center hover:text-purple-600 transition-colors duration-200 active:scale-95"
+          >
+            {nextColumn.title}
+            <span className="ml-1 text-lg">→</span>
+          </button>
+        ) : (
+          <div className="w-20" />
+        )}
+      </div>
+    );
+  };
+
   const renderColumn = (column: ColumnConfig, index: number) => {
     if (!column.visible) return null;
 
@@ -107,17 +146,22 @@ export default function Home() {
     const visibleColumns = columns.filter(col => col.visible);
     const visibleIndex = visibleColumns.findIndex(col => col.type === column.type);
     const isActive = visibleIndex === activeColumnIndex;
+    const isPrevious = visibleIndex === activeColumnIndex - 1;
+    const isNext = visibleIndex === activeColumnIndex + 1;
 
     return (
       <div 
         key={column.type}
         className={`
-          flex-1 min-w-[300px] max-w-[600px] p-4 overflow-y-auto border-r
-          transition-transform duration-300 ease-in-out
-          ${isActive ? 'translate-x-0' : 'translate-x-full'} 
-          md:translate-x-0 md:relative md:opacity-100
+          flex-1 min-w-[300px] max-w-[600px] overflow-y-auto border-r
+          transition-all duration-500 ease-in-out transform
+          ${isActive ? 'translate-x-0 scale-100' : 
+            isPrevious ? '-translate-x-full scale-95' : 
+            isNext ? 'translate-x-full scale-95' : 'translate-x-full'}
+          md:translate-x-0 md:scale-100 md:relative md:opacity-100
           ${!isActive && 'absolute inset-0 opacity-0 pointer-events-none'}
           ${isActive && 'relative opacity-100 pointer-events-auto'}
+          will-change-transform
         `}
         draggable="true"
         style={{
@@ -147,7 +191,7 @@ export default function Home() {
           }
         }}
       >
-        <div className="h-full">
+        <div className="h-full pt-14 md:pt-4 p-4">
           {columnContent}
         </div>
       </div>
@@ -173,6 +217,7 @@ export default function Home() {
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
+        {renderMobileHeader()}
         {columns.map((column, index) => renderColumn(column, index))}
         
         {/* Mobile Column Indicator */}
