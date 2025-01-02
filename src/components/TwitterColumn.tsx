@@ -7,6 +7,12 @@ export default function TwitterColumn() {
   const [widgetStatus, setWidgetStatus] = useState<string>('initializing');
 
   useEffect(() => {
+    // Load the Twitter widget script
+    const script = document.createElement('script');
+    script.src = 'https://widgets.sociablekit.com/twitter-list/widget.js';
+    script.async = true;
+    document.body.appendChild(script);
+
     // Function to check if widget content exists
     const checkWidgetContent = () => {
       const widgetElement = document.querySelector('.sk-ww-twitter-list');
@@ -84,12 +90,11 @@ export default function TwitterColumn() {
           </div>
         )}
         <div 
+          key="twitter-widget"
           className='sk-ww-twitter-list' 
           data-embed-id='25504159'
           style={{ minHeight: '500px' }}
-        >
-          <script src='https://widgets.sociablekit.com/twitter-list/widget.js' async></script>
-        </div>
+        />
       </div>
     </div>
   );

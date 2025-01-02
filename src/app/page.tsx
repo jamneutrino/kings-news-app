@@ -7,9 +7,10 @@ import YouTubeColumn from '@/components/YouTubeColumn';
 import NewsColumn from '@/components/NewsColumn';
 import PodcastColumn from '@/components/PodcastColumn';
 import TwitterColumn from '@/components/TwitterColumn';
+import TradesColumn from '@/components/TradesColumn';
 import { GripVertical } from 'lucide-react';
 
-type ColumnType = 'reddit' | 'youtube' | 'news' | 'podcast' | 'twitter';
+type ColumnType = 'reddit' | 'youtube' | 'news' | 'podcast' | 'twitter' | 'trades';
 
 interface ColumnConfig {
   type: ColumnType;
@@ -22,7 +23,8 @@ const defaultColumns: ColumnConfig[] = [
   { type: 'youtube', visible: true, title: 'YouTube' },
   { type: 'news', visible: true, title: 'News' },
   { type: 'podcast', visible: true, title: 'Podcasts' },
-  { type: 'twitter', visible: true, title: 'Twitter' }
+  { type: 'twitter', visible: true, title: 'Twitter' },
+  { type: 'trades', visible: true, title: 'Trades' }
 ];
 
 export default function Home() {
@@ -248,6 +250,7 @@ export default function Home() {
         case 'news': return <NewsColumn />;
         case 'podcast': return <PodcastColumn />;
         case 'twitter': return <TwitterColumn />;
+        case 'trades': return <TradesColumn />;
       }
     })();
 
