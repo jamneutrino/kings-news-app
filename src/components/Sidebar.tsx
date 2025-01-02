@@ -30,68 +30,6 @@ export default function Sidebar({ visibleColumns, onToggle, onManageColumns }: S
       `}>
         <div className="p-4">
           <h1 className="text-2xl font-bold text-purple-700 mb-6 mt-14 md:mt-0">Kings News</h1>
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="reddit"
-                checked={visibleColumns.reddit}
-                onChange={() => onToggle('reddit')}
-                className="w-4 h-4 text-purple-600"
-              />
-              <label htmlFor="reddit" className="text-gray-700">Reddit</label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="youtube"
-                checked={visibleColumns.youtube}
-                onChange={() => onToggle('youtube')}
-                className="w-4 h-4 text-purple-600"
-              />
-              <label htmlFor="youtube" className="text-gray-700">YouTube</label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="news"
-                checked={visibleColumns.news}
-                onChange={() => onToggle('news')}
-                className="w-4 h-4 text-purple-600"
-              />
-              <label htmlFor="news" className="text-gray-700">News</label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="podcast"
-                checked={visibleColumns.podcast}
-                onChange={() => onToggle('podcast')}
-                className="w-4 h-4 text-purple-600"
-              />
-              <label htmlFor="podcast" className="text-gray-700">Podcasts</label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="twitter"
-                checked={visibleColumns.twitter}
-                onChange={() => onToggle('twitter')}
-                className="w-4 h-4 text-purple-600"
-              />
-              <label htmlFor="twitter" className="text-gray-700">Twitter</label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="trades"
-                checked={visibleColumns.trades}
-                onChange={() => onToggle('trades')}
-                className="w-4 h-4 text-purple-600"
-              />
-              <label htmlFor="trades" className="text-gray-700">Trades</label>
-            </div>
-          </div>
           
           <div className="mt-8 border-t pt-4">
             <button
