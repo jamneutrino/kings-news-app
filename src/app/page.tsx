@@ -31,6 +31,7 @@ export default function Home() {
   const [columns, setColumns] = useState<ColumnConfig[]>(defaultColumns);
   const [isLoaded, setIsLoaded] = useState(false);
   const [activeColumnIndex, setActiveColumnIndex] = useState(0);
+  const [desktopStartIndex, setDesktopStartIndex] = useState(0);
   const [isManagingColumns, setIsManagingColumns] = useState(false);
   const touchStartX = useRef<number | null>(null);
   const mainRef = useRef<HTMLElement>(null);
@@ -240,6 +241,19 @@ export default function Home() {
     );
   };
 
+  const handleDesktopNext = () => {
+    const visibleColumns = columns.filter(col => col.visible);
+    if (desktopStartIndex + 3 < visibleColumns.length) {
+      setDesktopStartIndex(prev => prev + 1);
+    }
+  };
+
+  const handleDesktopPrev = () => {
+    if (desktopStartIndex > 0) {
+      setDesktopStartIndex(prev => prev - 1);
+    }
+  };
+
   const renderColumn = (column: ColumnConfig, index: number) => {
     if (!column.visible) return null;
 
@@ -256,9 +270,14 @@ export default function Home() {
 
     const visibleColumns = columns.filter(col => col.visible);
     const visibleIndex = visibleColumns.findIndex(col => col.type === column.type);
+    
+    // Mobile visibility logic
     const isActive = visibleIndex === activeColumnIndex;
     const isPrevious = visibleIndex === activeColumnIndex - 1;
     const isNext = visibleIndex === activeColumnIndex + 1;
+
+    // Desktop visibility logic
+    const isInDesktopView = visibleIndex >= desktopStartIndex && visibleIndex < desktopStartIndex + 3;
 
     return (
       <div 
@@ -266,12 +285,13 @@ export default function Home() {
         className={`
           flex-1 min-w-[300px] max-w-[600px] h-full border-r
           transition-all duration-300 ease-in-out
-          md:relative md:translate-x-0 md:opacity-100 md:pointer-events-auto md:block
+          md:relative md:translate-x-0 md:opacity-100 
           ${isActive ? 'relative translate-x-0 opacity-100 pointer-events-auto' : 'absolute inset-0'}
-          ${!isActive && 'opacity-0 pointer-events-none'}
-          ${isPrevious && '-translate-x-full'}
-          ${isNext && 'translate-x-full'}
+          ${!isActive && 'opacity-0 pointer-events-none md:opacity-100 md:pointer-events-auto'}
+          ${isPrevious && '-translate-x-full md:translate-x-0'}
+          ${isNext && 'translate-x-full md:translate-x-0'}
           ${!isActive && !isPrevious && !isNext && 'hidden md:block'}
+          ${!isInDesktopView && 'md:hidden'}
         `}
       >
         <div className="h-full overflow-y-auto pt-14 md:pt-4 px-4">
@@ -305,6 +325,32 @@ export default function Home() {
         {renderColumnManager()}
         <div className="flex-1 flex relative overflow-hidden">
           {columns.map((column, index) => renderColumn(column, index))}
+          
+          {/* Desktop Navigation Arrows */}
+          <div className="hidden md:block">
+            {desktopStartIndex > 0 && (
+              <button
+                onClick={handleDesktopPrev}
+                className="fixed left-[280px] top-1/2 -translate-y-1/2 z-30 bg-purple-600 rounded-r-lg p-2 text-white hover:bg-purple-700 transition-colors"
+                aria-label="Previous columns"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+            )}
+            {columns.filter(col => col.visible).length > desktopStartIndex + 3 && (
+              <button
+                onClick={handleDesktopNext}
+                className="fixed right-0 top-1/2 -translate-y-1/2 z-30 bg-purple-600 rounded-l-lg p-2 text-white hover:bg-purple-700 transition-colors"
+                aria-label="Next columns"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            )}
+          </div>
         </div>
         
         {/* Mobile Column Indicator */}
