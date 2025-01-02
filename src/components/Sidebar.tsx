@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Menu, X, Settings } from 'lucide-react';
+import SchedulePopup from './SchedulePopup';
 
 type ColumnType = 'reddit' | 'youtube' | 'news' | 'podcast' | 'twitter' | 'trades';
 
@@ -11,6 +12,7 @@ interface SidebarProps {
 
 export default function Sidebar({ visibleColumns, onToggle, onManageColumns }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [showSchedule, setShowSchedule] = useState(false);
 
   return (
     <>
@@ -29,7 +31,14 @@ export default function Sidebar({ visibleColumns, onToggle, onManageColumns }: S
         ${isOpen ? 'translate-x-0 w-64' : '-translate-x-full'}
       `}>
         <div className="p-4">
-          <h1 className="text-2xl font-bold text-purple-700 mb-6 mt-14 md:mt-0">Kings News</h1>
+          <h1 className="text-2xl font-bold text-purple-700 mb-2 mt-14 md:mt-0">Kings News</h1>
+          
+          <button
+            onClick={() => setShowSchedule(true)}
+            className="text-purple-600 hover:text-purple-800 transition-colors duration-200 text-sm mb-6"
+          >
+            Schedule
+          </button>
           
           <div className="mt-8 border-t pt-4">
             <button
@@ -56,6 +65,11 @@ export default function Sidebar({ visibleColumns, onToggle, onManageColumns }: S
           className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"
           onClick={() => setIsOpen(false)}
         />
+      )}
+
+      {/* Schedule Popup */}
+      {showSchedule && (
+        <SchedulePopup onClose={() => setShowSchedule(false)} />
       )}
     </>
   );
